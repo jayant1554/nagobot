@@ -108,26 +108,42 @@ export const ChatInterface = ({ product, onBack }: ChatInterfaceProps) => {
   const generateBotResponse = (userOffer: number): { message: string; offer?: number; accepted?: boolean } => {
     const minPrice = product.min_price;
     const basePrice = product.base_price;
-    const currentOffer = negotiation?.current_offer || basePrice;
+    const currentBotOffer = negotiation?.current_offer ? 
+      Math.max(negotiation.current_offer, minPrice) : basePrice;
 
-    if (userOffer >= basePrice * 0.95) {
+    // Accept if user offers close to base price or matches/exceeds current bot offer
+    if (userOffer >= basePrice * 0.95 || userOffer >= currentBotOffer * 0.98) {
       return {
         message: `Great offer! I can accept $${userOffer.toFixed(2)} for the ${product.name}. Deal!`,
         accepted: true
       };
-    } else if (userOffer >= minPrice) {
-      const counterOffer = Math.max(minPrice, userOffer * 1.1);
+    } 
+    
+    // If user offer is reasonable, make a counter offer by coming down
+    if (userOffer >= minPrice) {
+      const gap = currentBotOffer - userOffer;
+      const counterOffer = Math.max(minPrice, userOffer + (gap * 0.6));
+      
+      if (counterOffer <= userOffer + 5) {
+        // If we're very close, just accept
+        return {
+          message: `You drive a hard bargain! I can accept $${userOffer.toFixed(2)} for the ${product.name}. Deal!`,
+          accepted: true
+        };
+      }
+      
       return {
-        message: `I appreciate your offer of $${userOffer.toFixed(2)}. How about we meet in the middle at $${counterOffer.toFixed(2)}?`,
+        message: `I appreciate your offer of $${userOffer.toFixed(2)}. How about we meet closer at $${counterOffer.toFixed(2)}?`,
         offer: counterOffer
       };
-    } else {
-      const counterOffer = Math.max(minPrice, basePrice * 0.85);
-      return {
-        message: `I understand you're looking for a good deal, but $${userOffer.toFixed(2)} is quite low. The best I can do is $${counterOffer.toFixed(2)}. This is a premium product with great value!`,
-        offer: counterOffer
-      };
-    }
+    } 
+    
+    // User offer is below minimum, make final offer
+    const finalOffer = Math.max(minPrice, basePrice * 0.85);
+    return {
+      message: `I understand you're looking for a good deal, but $${userOffer.toFixed(2)} is quite low. My final offer is $${finalOffer.toFixed(2)}. This is a premium product with great value!`,
+      offer: finalOffer
+    };
   };
 
   const handleSendMessage = async () => {
