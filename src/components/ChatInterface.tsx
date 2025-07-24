@@ -157,31 +157,56 @@ export const ChatInterface = ({ product, onBack }: ChatInterfaceProps) => {
       // Add user message
       await addMessage(negotiation.id, 'user', userMessage);
 
-      // Check if user message contains a price/offer
+      // Check if user message contains a price/offer or acceptance
       const offerMatch = userMessage.match(/\$?(\d+(?:\.\d{2})?)/);
+      const acceptanceKeywords = ['deal', 'accept', 'agreed', 'ok', 'yes', 'match', 'take it', 'sold', 'confirm'];
+      const isAcceptance = acceptanceKeywords.some(keyword => 
+        userMessage.toLowerCase().includes(keyword)
+      );
       
       if (offerMatch) {
         const userOffer = parseFloat(offerMatch[1]);
-        const botResponse = generateBotResponse(userOffer);
+        
+        // Check if user is accepting the current bot offer
+        if (isAcceptance && negotiation.current_offer) {
+          // User is accepting the current negotiation offer
+          await supabase
+            .from('negotiations')
+            .update({ 
+              status: 'accepted',
+              final_price: negotiation.current_offer
+            })
+            .eq('id', negotiation.id);
 
-        // Update negotiation with current offer
-        await supabase
-          .from('negotiations')
-          .update({ 
-            current_offer: userOffer,
-            status: botResponse.accepted ? 'accepted' : 'active',
-            final_price: botResponse.accepted ? userOffer : null
-          })
-          .eq('id', negotiation.id);
+          await addMessage(negotiation.id, 'bot', `Perfect! Deal confirmed at $${negotiation.current_offer.toFixed(2)} for the ${product.name}. Thank you for your business!`);
 
-        // Add bot response
-        await addMessage(negotiation.id, 'bot', botResponse.message, botResponse.offer);
-
-        if (botResponse.accepted) {
           toast({
-            title: "Deal Accepted!",
-            description: `Congratulations! You got the ${product.name} for $${userOffer.toFixed(2)}`,
+            title: "Deal Confirmed!",
+            description: `Congratulations! You got the ${product.name} for $${negotiation.current_offer.toFixed(2)}`,
           });
+        } else {
+          // User is making a new offer
+          const botResponse = generateBotResponse(userOffer);
+
+          // Update negotiation with current offer
+          await supabase
+            .from('negotiations')
+            .update({ 
+              current_offer: userOffer,
+              status: botResponse.accepted ? 'accepted' : 'active',
+              final_price: botResponse.accepted ? userOffer : null
+            })
+            .eq('id', negotiation.id);
+
+          // Add bot response
+          await addMessage(negotiation.id, 'bot', botResponse.message, botResponse.offer);
+
+          if (botResponse.accepted) {
+            toast({
+              title: "Deal Accepted!",
+              description: `Congratulations! You got the ${product.name} for $${userOffer.toFixed(2)}`,
+            });
+          }
         }
       } else {
         // General conversation
