@@ -14,7 +14,118 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          negotiation_id: string
+          offer_amount: number | null
+          sender: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          negotiation_id: string
+          offer_amount?: number | null
+          sender: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          negotiation_id?: string
+          offer_amount?: number | null
+          sender?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_negotiation_id_fkey"
+            columns: ["negotiation_id"]
+            isOneToOne: false
+            referencedRelation: "negotiations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      negotiations: {
+        Row: {
+          created_at: string
+          current_offer: number | null
+          final_price: number | null
+          id: string
+          product_id: string
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_offer?: number | null
+          final_price?: number | null
+          id?: string
+          product_id: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_offer?: number | null
+          final_price?: number | null
+          id?: string
+          product_id?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negotiations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          base_price: number
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          min_price: number
+          name: string
+          stock: number | null
+        }
+        Insert: {
+          base_price: number
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          min_price: number
+          name: string
+          stock?: number | null
+        }
+        Update: {
+          base_price?: number
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          min_price?: number
+          name?: string
+          stock?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
