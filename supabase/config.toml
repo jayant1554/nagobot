@@ -1,1 +1,4 @@
 project_id = "qxcpnitxkhmfpvbxgpqo"
+
+[functions.negotiate-price]
+verify_jwt = false

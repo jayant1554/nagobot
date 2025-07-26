@@ -105,45 +105,25 @@ export const ChatInterface = ({ product, onBack }: ChatInterfaceProps) => {
     }
   };
 
-  const generateBotResponse = (userOffer: number): { message: string; offer?: number; accepted?: boolean } => {
-    const minPrice = product.min_price;
-    const basePrice = product.base_price;
-    const currentBotOffer = negotiation?.current_offer ? 
-      Math.max(negotiation.current_offer, minPrice) : basePrice;
+  const callNegotiationAPI = async (userMessage: string) => {
+    try {
+      const response = await supabase.functions.invoke('negotiate-price', {
+        body: {
+          userMessage,
+          negotiationId: negotiation.id,
+          productId: product.id
+        }
+      });
 
-    // Accept if user offers close to base price or matches/exceeds current bot offer
-    if (userOffer >= basePrice * 0.95 || userOffer >= currentBotOffer * 0.98) {
-      return {
-        message: `Great offer! I can accept $${userOffer.toFixed(2)} for the ${product.name}. Deal!`,
-        accepted: true
-      };
-    } 
-    
-    // If user offer is reasonable, make a counter offer by coming down
-    if (userOffer >= minPrice) {
-      const gap = currentBotOffer - userOffer;
-      const counterOffer = Math.max(minPrice, userOffer + (gap * 0.6));
-      
-      if (counterOffer <= userOffer + 5) {
-        // If we're very close, just accept
-        return {
-          message: `You drive a hard bargain! I can accept $${userOffer.toFixed(2)} for the ${product.name}. Deal!`,
-          accepted: true
-        };
+      if (response.error) {
+        throw new Error(response.error.message);
       }
-      
-      return {
-        message: `I appreciate your offer of $${userOffer.toFixed(2)}. How about we meet closer at $${counterOffer.toFixed(2)}?`,
-        offer: counterOffer
-      };
-    } 
-    
-    // User offer is below minimum, make final offer
-    const finalOffer = Math.max(minPrice, basePrice * 0.85);
-    return {
-      message: `I understand you're looking for a good deal, but $${userOffer.toFixed(2)} is quite low. My final offer is $${finalOffer.toFixed(2)}. This is a premium product with great value!`,
-      offer: finalOffer
-    };
+
+      return response.data;
+    } catch (error) {
+      console.error('Error calling negotiation API:', error);
+      throw error;
+    }
   };
 
   const handleSendMessage = async () => {
@@ -157,66 +137,47 @@ export const ChatInterface = ({ product, onBack }: ChatInterfaceProps) => {
       // Add user message
       await addMessage(negotiation.id, 'user', userMessage);
 
-      // Check if user message contains a price/offer or acceptance
-      const offerMatch = userMessage.match(/\$?(\d+(?:\.\d{2})?)/);
-      const acceptanceKeywords = ['deal', 'accept', 'agreed', 'ok', 'yes', 'match', 'take it', 'sold', 'confirm'];
-      const isAcceptance = acceptanceKeywords.some(keyword => 
-        userMessage.toLowerCase().includes(keyword)
-      );
-      
-      if (offerMatch) {
-        const userOffer = parseFloat(offerMatch[1]);
-        
-        // Check if user is accepting the current bot offer
-        if (isAcceptance && negotiation.current_offer) {
-          // User is accepting the current negotiation offer
-          await supabase
-            .from('negotiations')
-            .update({ 
-              status: 'accepted',
-              final_price: negotiation.current_offer
-            })
-            .eq('id', negotiation.id);
+      // Call the LLM-powered negotiation API
+      const apiResponse = await callNegotiationAPI(userMessage);
 
-          await addMessage(negotiation.id, 'bot', `Perfect! Deal confirmed at $${negotiation.current_offer.toFixed(2)} for the ${product.name}. Thank you for your business!`);
+      if (apiResponse.accepted) {
+        // Deal was accepted by the LLM
+        await supabase
+          .from('negotiations')
+          .update({ 
+            status: 'accepted',
+            final_price: apiResponse.finalPrice
+          })
+          .eq('id', negotiation.id);
 
-          toast({
-            title: "Deal Confirmed!",
-            description: `Congratulations! You got the ${product.name} for $${negotiation.current_offer.toFixed(2)}`,
-          });
-        } else {
-          // User is making a new offer
-          const botResponse = generateBotResponse(userOffer);
+        await addMessage(negotiation.id, 'bot', apiResponse.message);
 
-          // Update negotiation with current offer
-          await supabase
-            .from('negotiations')
-            .update({ 
-              current_offer: userOffer,
-              status: botResponse.accepted ? 'accepted' : 'active',
-              final_price: botResponse.accepted ? userOffer : null
-            })
-            .eq('id', negotiation.id);
+        toast({
+          title: "Deal Confirmed!",
+          description: `Order ID: ${apiResponse.orderId}`,
+        });
 
-          // Add bot response
-          await addMessage(negotiation.id, 'bot', botResponse.message, botResponse.offer);
-
-          if (botResponse.accepted) {
-            toast({
-              title: "Deal Accepted!",
-              description: `Congratulations! You got the ${product.name} for $${userOffer.toFixed(2)}`,
-            });
-          }
-        }
+        setNegotiation(prev => prev ? { ...prev, status: 'accepted' } : null);
       } else {
-        // General conversation
-        const responses = [
-          `I understand you're interested in the ${product.name}. Feel free to make an offer!`,
-          `This is a high-quality product worth every penny. What price were you thinking?`,
-          `I'm here to work with you on the price. What would you like to offer?`,
-        ];
-        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-        await addMessage(negotiation.id, 'bot', randomResponse);
+        // Continue negotiation
+        if (apiResponse.offerAmount) {
+          // Update negotiation with the new offer
+          await supabase
+            .from('negotiations')
+            .update({ 
+              current_offer: apiResponse.offerAmount,
+              status: 'active'
+            })
+            .eq('id', negotiation.id);
+
+          setNegotiation(prev => prev ? { 
+            ...prev, 
+            current_offer: apiResponse.offerAmount 
+          } : null);
+        }
+
+        // Add bot response
+        await addMessage(negotiation.id, 'bot', apiResponse.message, apiResponse.offerAmount);
       }
     } catch (error) {
       console.error('Error sending message:', error);
