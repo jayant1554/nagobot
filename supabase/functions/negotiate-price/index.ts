@@ -78,7 +78,7 @@ Reply with your best price or confirmation.
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'mixtral-8x7b-32768', // Using a reliable model
+      model: 'mistral-saba-24b', // Using the model from your Streamlit app
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
       max_tokens: 200,
