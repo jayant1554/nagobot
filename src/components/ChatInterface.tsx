@@ -71,7 +71,7 @@ export const ChatInterface = ({ product, onBack }: ChatInterfaceProps) => {
       setNegotiation(negotiationData);
 
       // Add initial bot message
-      const initialMessage = `Hello! I see you're interested in the ${product.name} priced at $${product.base_price}. I'm here to help you get the best deal! What would you like to offer?`;
+      const initialMessage = `Hello! I see you're interested in the ${product.name}. How can I assist you today?`;
       
       await addMessage(negotiationData.id, 'bot', initialMessage);
     } catch (error) {

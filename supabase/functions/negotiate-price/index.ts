@@ -97,7 +97,7 @@ async function generateLlmResponse(
   let shouldOfferPrice = false;
   let suggestedPrice = originalPrice;
   
-  if (isFirstMessage && !askingForDiscount) {
+  if (isFirstMessage && !askingForDiscount && !userOfferedPrice) {
     // First message and not asking for discount - just introduce the product
     shouldOfferPrice = false;
   } else if (askingForDiscount || userOfferedPrice) {
@@ -105,7 +105,7 @@ async function generateLlmResponse(
     shouldOfferPrice = true;
     suggestedPrice = calculateOffer(originalPrice, minPrice, negotiationRound, userOfferedPrice || undefined);
   } else if (lastOffer) {
-    // Continue with last offer
+    // Continue with last offer only if user is continuing negotiation
     shouldOfferPrice = true;
     suggestedPrice = lastOffer;
   }
