@@ -36,6 +36,44 @@ function userAgreed(userInput: string): boolean {
   return keywords.some(keyword => userInput.toLowerCase().includes(keyword));
 }
 
+// Check if user is asking for a discount
+function isAskingForDiscount(userInput: string): boolean {
+  const discountKeywords = [
+    "discount", "cheaper", "lower price", "best price", "deal", 
+    "reduce", "less", "better offer", "negotiate", "can you do better",
+    "what's your best", "lowest", "bargain"
+  ];
+  return discountKeywords.some(keyword => userInput.toLowerCase().includes(keyword));
+}
+
+// Calculate appropriate offer based on negotiation round
+function calculateOffer(originalPrice: number, minPrice: number, negotiationRound: number, userOfferedPrice?: number): number {
+  // If user offered a specific price, try to meet somewhere in the middle
+  if (userOfferedPrice && userOfferedPrice >= minPrice) {
+    return Math.max(userOfferedPrice, minPrice);
+  }
+  
+  // Progressive discount strategy
+  let discountPercentage: number;
+  switch (negotiationRound) {
+    case 1: // First discount: 5-8%
+      discountPercentage = 0.07;
+      break;
+    case 2: // Second discount: 10-12%
+      discountPercentage = 0.11;
+      break;
+    case 3: // Third discount: 15-18%
+      discountPercentage = 0.16;
+      break;
+    default: // Final discounts: closer to minimum
+      discountPercentage = 0.20;
+      break;
+  }
+  
+  const calculatedPrice = originalPrice * (1 - discountPercentage);
+  return Math.max(calculatedPrice, minPrice);
+}
+
 // Generate LLM response using Groq
 async function generateLlmResponse(
   userInput: string,
@@ -43,13 +81,39 @@ async function generateLlmResponse(
   originalPrice: number,
   minPrice: number,
   inventory: number,
-  lastOffer: number | null
+  lastOffer: number | null,
+  negotiationRound: number
 ): Promise<string> {
   if (!groqApiKey) {
     throw new Error('GROQ_API_KEY not configured');
   }
 
+  const isFirstMessage = !lastOffer;
+  const askingForDiscount = isAskingForDiscount(userInput);
+  
+  // Extract user's offered price if any
+  const userOfferedPrice = extractPriceFromText(userInput);
+  
+  let shouldOfferPrice = false;
+  let suggestedPrice = originalPrice;
+  
+  if (isFirstMessage && !askingForDiscount) {
+    // First message and not asking for discount - just introduce the product
+    shouldOfferPrice = false;
+  } else if (askingForDiscount || userOfferedPrice) {
+    // User is asking for discount or made an offer
+    shouldOfferPrice = true;
+    suggestedPrice = calculateOffer(originalPrice, minPrice, negotiationRound, userOfferedPrice || undefined);
+  } else if (lastOffer) {
+    // Continue with last offer
+    shouldOfferPrice = true;
+    suggestedPrice = lastOffer;
+  }
+
   const lastOfferNote = lastOffer ? `\nYou previously offered $${lastOffer}.\n` : "";
+  const priceInstruction = shouldOfferPrice 
+    ? `You should offer a price of $${suggestedPrice.toFixed(2)} in your response.`
+    : `Do NOT offer any discount or mention pricing unless the customer specifically asks for a better price.`;
 
   const prompt = `
 You are a polite and persuasive chatbot for an eCommerce platform helping users negotiate product prices.
@@ -61,21 +125,24 @@ ${lastOfferNote}
 
 Customer said: "${userInput}"
 
+${priceInstruction}
+
 Rules:
-1. Do NOT mention or reveal the minimum price.
-2. start negotiations from the original price of $${originalPrice}.
-3. Always try to earn the customer's trust and provide a friendly experience along with the best price
-4. BE polite and professional and try to earn the customer's trust
+1. Do NOT mention or reveal the minimum price of $${minPrice}.
+2. Start with the original price of $${originalPrice} and only offer discounts when asked.
+3. Always try to earn the customer's trust and provide a friendly experience.
+4. BE polite and professional and try to earn the customer's trust.
 5. Try to earn maximum profit for the company.
 6. Do NOT go below $${minPrice} under any circumstance.
-7. dont mention the minimum price.
-8. Dont increase the price one you have given.
+7. Don't mention the minimum price.
+8. Don't increase the price once you have given it.
 9. If the customer has agreed (e.g., "ok", "deal", "I agree"), respond warmly and stop negotiating.
 10. If the user's offered price is higher than the min price, accept it without further discounting.
 11. Be professional and ensure the tone remains helpful and sales-friendly.
-12. Always thank the customer for their interest and for negotiating with us.
+12. Always thank the customer for their interest.
+13. ${shouldOfferPrice ? `Include the price $${suggestedPrice.toFixed(2)} in your response.` : 'Focus on product features and benefits, not pricing.'}
 
-Reply with your best price or confirmation.
+Reply appropriately based on the customer's message.
 `;
 
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -85,7 +152,7 @@ Reply with your best price or confirmation.
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'mistral-saba-24b', // Using the model from your Streamlit app
+      model: 'mistral-saba-24b',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
       max_tokens: 200,
@@ -157,6 +224,16 @@ serve(async (req) => {
       });
     }
 
+    // Count negotiation rounds (count previous chat messages from user)
+    const { data: chatHistory, error: chatError } = await supabase
+      .from('chat_messages')
+      .select('sender')
+      .eq('negotiation_id', negotiationId)
+      .eq('sender', 'user')
+      .order('created_at', { ascending: true });
+
+    const negotiationRound = (chatHistory?.length || 0) + 1;
+
     // Generate LLM response
     const botResponse = await generateLlmResponse(
       userMessage,
@@ -164,7 +241,8 @@ serve(async (req) => {
       product.base_price,
       product.min_price,
       product.stock || 10,
-      negotiation.current_offer
+      negotiation.current_offer,
+      negotiationRound
     );
 
     // Extract price from bot response
