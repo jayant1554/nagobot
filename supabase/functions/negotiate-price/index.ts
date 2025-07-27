@@ -13,16 +13,24 @@ const groqApiKey = Deno.env.get('GROQ_API_KEY');
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Extract price from text (supporting both $ and ₹)
+// Extract price from text (supporting both $ and ₹) - improved logic from Streamlit
 function extractPriceFromText(text: string): number | null {
-  const match = text.match(/[\$₹]\s?(\d+(?:\.\d{2})?)/);
-  if (match) {
-    return parseFloat(match[1]);
+  // First try to match ₹ prices (3-5 digits as in Streamlit)
+  const rupeeMatch = text.match(/₹\s?(\d{3,5})/);
+  if (rupeeMatch) {
+    return parseInt(rupeeMatch[1]);
   }
+  
+  // Fallback to $ prices with decimal support
+  const dollarMatch = text.match(/\$\s?(\d+(?:\.\d{2})?)/);
+  if (dollarMatch) {
+    return parseFloat(dollarMatch[1]);
+  }
+  
   return null;
 }
 
-// Check if user agreed
+// Check if user agreed - enhanced logic from Streamlit
 function userAgreed(userInput: string): boolean {
   const keywords = ["deal", "i agree", "okay", "ok", "done", "confirm", "sure", "accept", "yes"];
   return keywords.some(keyword => userInput.toLowerCase().includes(keyword));
@@ -55,18 +63,17 @@ Customer said: "${userInput}"
 
 Rules:
 1. Do NOT mention or reveal the minimum price.
-2. Start negotiations from the original price of $${originalPrice}.
+2. start negotiations from the original price of $${originalPrice}.
 3. Always try to earn the customer's trust and provide a friendly experience along with the best price
 4. BE polite and professional and try to earn the customer's trust
 5. Try to earn maximum profit for the company.
 6. Do NOT go below $${minPrice} under any circumstance.
-7. Don't mention the minimum price.
-8. Don't increase the price once you have given it.
+7. dont mention the minimum price.
+8. Dont increase the price one you have given.
 9. If the customer has agreed (e.g., "ok", "deal", "I agree"), respond warmly and stop negotiating.
 10. If the user's offered price is higher than the min price, accept it without further discounting.
 11. Be professional and ensure the tone remains helpful and sales-friendly.
 12. Always thank the customer for their interest and for negotiating with us.
-13. Always include a price offer in your response using the format $XXX.XX
 
 Reply with your best price or confirmation.
 `;
