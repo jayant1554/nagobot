@@ -46,32 +46,41 @@ function isAskingForDiscount(userInput: string): boolean {
   return discountKeywords.some(keyword => userInput.toLowerCase().includes(keyword));
 }
 
-// Calculate appropriate offer based on negotiation round
-function calculateOffer(originalPrice: number, minPrice: number, negotiationRound: number, userOfferedPrice?: number): number {
-  // If user offered a specific price, try to meet somewhere in the middle
+// Calculate appropriate offer based on negotiation round and current offer
+function calculateOffer(originalPrice: number, minPrice: number, negotiationRound: number, currentOffer: number | null, userOfferedPrice?: number): number {
+  // If user offered a specific price that's above minimum, accept it
   if (userOfferedPrice && userOfferedPrice >= minPrice) {
     return Math.max(userOfferedPrice, minPrice);
   }
   
-  // Progressive discount strategy
+  // Use current offer as baseline if it exists, otherwise use original price
+  const basePrice = currentOffer || originalPrice;
+  
+  // Never go higher than the current lowest offer
+  const maxAllowedPrice = currentOffer || originalPrice;
+  
+  // Progressive discount strategy - smaller discounts each round
   let discountPercentage: number;
   switch (negotiationRound) {
-    case 1: // First discount: 5-8%
-      discountPercentage = 0.07;
+    case 1: // First discount: 5-7% from original price
+      discountPercentage = 0.06;
       break;
-    case 2: // Second discount: 10-12%
-      discountPercentage = 0.11;
+    case 2: // Second discount: 3-5% from current offer
+      discountPercentage = 0.04;
       break;
-    case 3: // Third discount: 15-18%
-      discountPercentage = 0.16;
+    case 3: // Third discount: 2-3% from current offer
+      discountPercentage = 0.025;
       break;
-    default: // Final discounts: closer to minimum
-      discountPercentage = 0.20;
+    default: // Final small discounts: 1-2% from current offer
+      discountPercentage = 0.015;
       break;
   }
   
-  const calculatedPrice = originalPrice * (1 - discountPercentage);
-  return Math.max(calculatedPrice, minPrice);
+  const calculatedPrice = basePrice * (1 - discountPercentage);
+  const finalPrice = Math.max(calculatedPrice, minPrice);
+  
+  // Ensure we never offer a higher price than previously offered
+  return Math.min(finalPrice, maxAllowedPrice);
 }
 
 // Generate LLM response using Groq
@@ -100,7 +109,7 @@ async function generateLlmResponse(
   // Only offer a price if user explicitly asks for discount or makes an offer
   if (askingForDiscount || userOfferedPrice) {
     shouldOfferPrice = true;
-    suggestedPrice = calculateOffer(originalPrice, minPrice, negotiationRound, userOfferedPrice || undefined);
+    suggestedPrice = calculateOffer(originalPrice, minPrice, negotiationRound, lastOffer, userOfferedPrice || undefined);
   } else {
     // Don't offer any price - just be helpful about the product
     shouldOfferPrice = false;
@@ -244,10 +253,27 @@ serve(async (req) => {
     // Extract price from bot response
     const offeredPrice = extractPriceFromText(botResponse);
     
-    // Only return an offer amount if we actually offered a price
-    const finalOfferedPrice = offeredPrice && offeredPrice >= product.min_price 
-      ? offeredPrice 
-      : null;
+    // Validate the offered price and ensure it follows our rules
+    let finalOfferedPrice = null;
+    if (offeredPrice && offeredPrice >= product.min_price) {
+      // Ensure we never offer a higher price than current offer
+      if (negotiation.current_offer) {
+        finalOfferedPrice = Math.min(offeredPrice, negotiation.current_offer);
+      } else {
+        finalOfferedPrice = offeredPrice;
+      }
+      
+      // Double-check it's not below minimum
+      finalOfferedPrice = Math.max(finalOfferedPrice, product.min_price);
+    }
+
+    // Update negotiation current_offer if we have a new offer
+    if (finalOfferedPrice && finalOfferedPrice !== negotiation.current_offer) {
+      await supabase
+        .from('negotiations')
+        .update({ current_offer: finalOfferedPrice })
+        .eq('id', negotiationId);
+    }
 
     return new Response(JSON.stringify({ 
       message: botResponse,
