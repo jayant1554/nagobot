@@ -88,7 +88,7 @@ async function generateLlmResponse(
     throw new Error('GROQ_API_KEY not configured');
   }
 
-  const isFirstMessage = !lastOffer;
+  const isFirstMessage = negotiationRound === 1;
   const askingForDiscount = isAskingForDiscount(userInput);
   
   // Extract user's offered price if any
@@ -97,17 +97,13 @@ async function generateLlmResponse(
   let shouldOfferPrice = false;
   let suggestedPrice = originalPrice;
   
-  if (isFirstMessage && !askingForDiscount && !userOfferedPrice) {
-    // First message and not asking for discount - just introduce the product
-    shouldOfferPrice = false;
-  } else if (askingForDiscount || userOfferedPrice) {
-    // User is asking for discount or made an offer
+  // Only offer a price if user explicitly asks for discount or makes an offer
+  if (askingForDiscount || userOfferedPrice) {
     shouldOfferPrice = true;
     suggestedPrice = calculateOffer(originalPrice, minPrice, negotiationRound, userOfferedPrice || undefined);
-  } else if (lastOffer) {
-    // Continue with last offer only if user is continuing negotiation
-    shouldOfferPrice = true;
-    suggestedPrice = lastOffer;
+  } else {
+    // Don't offer any price - just be helpful about the product
+    shouldOfferPrice = false;
   }
 
   const lastOfferNote = lastOffer ? `\nYou previously offered $${lastOffer}.\n` : "";
@@ -248,10 +244,10 @@ serve(async (req) => {
     // Extract price from bot response
     const offeredPrice = extractPriceFromText(botResponse);
     
-    // Make sure the offered price doesn't go below minimum
+    // Only return an offer amount if we actually offered a price
     const finalOfferedPrice = offeredPrice && offeredPrice >= product.min_price 
       ? offeredPrice 
-      : product.min_price;
+      : null;
 
     return new Response(JSON.stringify({ 
       message: botResponse,
