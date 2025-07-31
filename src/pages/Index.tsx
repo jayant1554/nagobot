@@ -66,27 +66,38 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">Price Negotiation Chatbot</h1>
-          <p className="text-xl text-muted-foreground">
-            Browse products and negotiate prices with our AI chatbot
+    <div className="min-h-screen gradient-bg">
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center mb-12 animate-fade-in">
+          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+            Smart Price Negotiation
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Discover amazing products and negotiate the best prices with our intelligent AI assistant
           </p>
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="text-lg">Loading products...</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-80 bg-muted rounded-xl"></div>
+              </div>
+            ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onNegotiate={handleNegotiate}
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.map((product, index) => (
+              <div 
+                key={product.id} 
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <ProductCard
+                  product={product}
+                  onNegotiate={handleNegotiate}
+                />
+              </div>
             ))}
           </div>
         )}

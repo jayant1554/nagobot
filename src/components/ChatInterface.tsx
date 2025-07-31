@@ -199,63 +199,92 @@ export const ChatInterface = ({ product, onBack }: ChatInterfaceProps) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto h-[80vh] flex flex-col">
-      <Card className="flex-1 flex flex-col">
-        <CardHeader className="flex-row items-center space-y-0 pb-4">
-          <Button variant="ghost" size="sm" onClick={onBack} className="mr-3">
+    <div className="max-w-5xl mx-auto h-[85vh] flex flex-col">
+      <Card className="flex-1 flex flex-col gradient-card shadow-2xl border-border/50">
+        <CardHeader className="flex-row items-center space-y-0 pb-4 border-b border-border/50 bg-background/50">
+          <Button variant="ghost" size="sm" onClick={onBack} className="mr-4 hover:bg-primary/10 hover:text-primary">
             <ArrowLeft className="h-4 w-4" />
+            <span className="ml-1 hidden sm:inline">Back</span>
           </Button>
           <div className="flex-1">
-            <CardTitle className="text-lg">Negotiating: {product.name}</CardTitle>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm text-muted-foreground">Starting Price:</span>
-              <Badge variant="outline">${product.base_price.toFixed(2)}</Badge>
+            <CardTitle className="text-xl font-semibold">💬 Negotiating: {product.name}</CardTitle>
+            <div className="flex flex-wrap items-center gap-3 mt-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Starting Price:</span>
+                <Badge variant="outline" className="bg-background/80">
+                  💰 ${product.base_price.toFixed(2)}
+                </Badge>
+              </div>
               {negotiation?.current_offer && (
-                <>
+                <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Current Offer:</span>
-                  <Badge variant="secondary">${negotiation.current_offer.toFixed(2)}</Badge>
-                </>
+                  <Badge className="bg-primary/10 text-primary border-primary/30 animate-pulse">
+                    🎯 ${negotiation.current_offer.toFixed(2)}
+                  </Badge>
+                </div>
               )}
             </div>
           </div>
         </CardHeader>
         
-        <CardContent className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-            {messages.map((message) => (
+        <CardContent className="flex-1 overflow-hidden flex flex-col p-6">
+          <div className="flex-1 overflow-y-auto space-y-4 mb-6 pr-2">
+            {messages.map((message, index) => (
               <div
                 key={message.id}
-                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div
-                  className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                    message.sender === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
-                  }`}
-                >
-                  <p className="text-sm">{message.message}</p>
+                <div className={message.sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-bot'}>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.message}</p>
                   {message.offer_amount && (
-                    <Badge variant="outline" className="mt-2">
-                      Offer: ${message.offer_amount.toFixed(2)}
+                    <Badge 
+                      variant="outline" 
+                      className="mt-3 inline-flex items-center gap-1 bg-background/20 border-current/30"
+                    >
+                      💸 Offer: ${message.offer_amount.toFixed(2)}
                     </Badge>
                   )}
                 </div>
               </div>
             ))}
+            {isLoading && (
+              <div className="flex justify-start animate-fade-in">
+                <div className="chat-bubble-bot">
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                    <span className="text-xs opacity-70">AI is thinking...</span>
+                  </div>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-3 p-3 bg-background/30 rounded-xl border border-border/50">
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Type your message or make an offer (e.g., $850)..."
+              placeholder="💬 Type your message or make an offer (e.g., $850)..."
               disabled={isLoading}
+              className="flex-1 border-border/30 bg-background/50 focus:bg-background transition-colors"
             />
-            <Button onClick={handleSendMessage} disabled={isLoading || !newMessage.trim()}>
-              <Send className="h-4 w-4" />
+            <Button 
+              onClick={handleSendMessage} 
+              disabled={isLoading || !newMessage.trim()}
+              size="lg"
+              className="px-6 hover:shadow-md transition-all duration-200"
+            >
+              {isLoading ? (
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </CardContent>

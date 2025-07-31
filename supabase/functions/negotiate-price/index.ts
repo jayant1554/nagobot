@@ -157,7 +157,7 @@ Reply appropriately based on the customer's message.
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'mistral-saba-24b',
+      model: 'llama3-8b-8192',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
       max_tokens: 200,
