@@ -1,7 +1,6 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Star, Package } from "lucide-react";
 
 interface Product {
   id: string;
@@ -20,67 +19,44 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, onNegotiate }: ProductCardProps) => {
   return (
-    <Card className="group h-full flex flex-col shadow-card hover:shadow-elegant transition-all duration-300 hover:-translate-y-2 border-0 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm overflow-hidden">
-      <div className="relative overflow-hidden">
-        <div className="aspect-square w-full">
+    <Card className="h-full flex flex-col gradient-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group overflow-hidden">
+      <CardHeader className="pb-3 relative">
+        <div className="aspect-square w-full mb-4 overflow-hidden rounded-xl relative group">
           <img
             src={product.image_url}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
-        
-        {/* Overlay gradient on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {/* Category badge */}
-        <Badge 
-          variant="secondary" 
-          className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-foreground font-medium border-0 shadow-sm"
-        >
-          {product.category}
-        </Badge>
-        
-        {/* Stock indicator */}
-        <div className="absolute top-3 right-3">
-          <div className={`w-3 h-3 rounded-full ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'} shadow-lg`}></div>
+        <div className="flex justify-between items-start mb-2">
+          <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors">
+            {product.name}
+          </CardTitle>
+          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+            {product.category}
+          </Badge>
         </div>
-      </div>
-
-      <CardHeader className="pb-3 flex-1">
-        <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors duration-200 line-clamp-2">
-          {product.name}
-        </CardTitle>
-        <CardDescription className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+        <CardDescription className="text-sm text-muted-foreground leading-relaxed">
           {product.description}
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="py-4">
+      <CardContent className="flex-1 pb-4">
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold text-primary">
               ${product.base_price.toFixed(2)}
-            </div>
-            <div className="flex items-center space-x-1">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <Star className="w-4 h-4 fill-muted text-muted" />
-            </div>
+            </span>
+            <span className="text-sm text-muted-foreground line-through">
+              ${(product.base_price * 1.2).toFixed(2)}
+            </span>
           </div>
-          
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-1 text-muted-foreground">
-              <Package className="w-4 h-4" />
-              <span>{product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}</span>
-            </div>
-            {product.stock > 0 && product.stock <= 5 && (
-              <Badge variant="destructive" className="text-xs">
-                Low Stock
-              </Badge>
-            )}
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <span className="text-sm text-muted-foreground">
+              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+            </span>
           </div>
         </div>
       </CardContent>
@@ -89,23 +65,10 @@ export const ProductCard = ({ product, onNegotiate }: ProductCardProps) => {
         <Button 
           onClick={() => onNegotiate(product.id)}
           disabled={product.stock === 0}
-          className={`w-full group/btn relative overflow-hidden ${
-            product.stock > 0 
-              ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow hover:shadow-lg' 
-              : 'opacity-50'
-          }`}
+          className="w-full font-medium group-hover:shadow-lg transition-all duration-200 disabled:opacity-50"
+          size="lg"
         >
-          <div className="flex items-center justify-center space-x-2 relative z-10">
-            <ShoppingCart className="w-4 h-4" />
-            <span className="font-medium">
-              {product.stock > 0 ? 'Start Negotiation' : 'Out of Stock'}
-            </span>
-          </div>
-          
-          {/* Button hover effect */}
-          {product.stock > 0 && (
-            <div className="absolute inset-0 bg-gradient-to-r from-primary-glow to-primary opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
-          )}
+          {product.stock > 0 ? '💬 Start Negotiation' : '❌ Out of Stock'}
         </Button>
       </CardFooter>
     </Card>
