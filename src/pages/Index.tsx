@@ -67,31 +67,56 @@ const Index = () => {
 
   return (
     <div className="min-h-screen gradient-bg">
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-            Smart Price Negotiation
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Discover amazing products and negotiate the best prices with our intelligent AI assistant
+      {/* Hero Section */}
+      <div className="container mx-auto px-4 py-16">
+        <div className="text-center mb-16 animate-fade-in">
+          <div className="mb-6">
+            <h1 className="text-6xl md:text-7xl font-playfair font-bold mb-4 hero-text">
+              Beauty Boutique
+            </h1>
+            <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent-foreground mx-auto mb-6 rounded-full"></div>
+          </div>
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto font-light leading-relaxed">
+            Experience the future of beauty shopping with our AI-powered negotiation assistant. 
+            Discover premium products and secure your perfect price.
           </p>
+          <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm font-medium">
+            <div className="flex items-center gap-2 text-primary">
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+              AI-Powered Negotiations
+            </div>
+            <div className="flex items-center gap-2 text-primary">
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+              Best Price Guarantee
+            </div>
+            <div className="flex items-center gap-2 text-primary">
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+              Premium Beauty Products
+            </div>
+          </div>
+        </div>
+
+        {/* Products Section */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-playfair font-semibold text-center mb-2">Curated Collection</h2>
+          <p className="text-center text-muted-foreground mb-12">Handpicked beauty essentials for the modern you</p>
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="h-80 bg-muted rounded-xl"></div>
+                <div className="beauty-card h-96 bg-muted/30"></div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product, index) => (
               <div 
                 key={product.id} 
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
+                className="animate-fade-in hover:animate-float"
+                style={{ animationDelay: `${index * 150}ms` }}
               >
                 <ProductCard
                   product={product}

@@ -6,51 +6,61 @@
 
 @layer base {
   :root {
-    --background: 220 15% 98%;
-    --foreground: 220 20% 10%;
+    /* Beauty-inspired background palette */
+    --background: 355 20% 99%;
+    --foreground: 25 15% 15%;
 
+    /* Elegant card colors */
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
+    --card-foreground: 25 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
+    --popover-foreground: 25 15% 15%;
 
-    --primary: 262 80% 50%;
+    /* Rose gold primary palette */
+    --primary: 15 55% 70%;
     --primary-foreground: 0 0% 100%;
+    --primary-muted: 15 25% 85%;
 
-    --secondary: 220 15% 96%;
-    --secondary-foreground: 220 20% 10%;
+    /* Warm secondary tones */
+    --secondary: 30 15% 96%;
+    --secondary-foreground: 25 15% 15%;
 
-    --muted: 220 15% 96%;
-    --muted-foreground: 220 10% 40%;
+    /* Subtle muted tones */
+    --muted: 25 10% 95%;
+    --muted-foreground: 25 8% 45%;
 
-    --accent: 262 50% 95%;
-    --accent-foreground: 262 80% 50%;
+    /* Coral accent */
+    --accent: 10 45% 92%;
+    --accent-foreground: 15 65% 50%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
-    --ring: 262 80% 50%;
+    /* Soft borders and inputs */
+    --border: 25 15% 92%;
+    --input: 25 15% 94%;
+    --ring: 15 55% 70%;
 
-    /* Enhanced gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(262 80% 50%), hsl(262 70% 60%));
-    --gradient-secondary: linear-gradient(135deg, hsl(220 15% 98%), hsl(220 10% 95%));
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(220 15% 98%));
+    /* Beauty-inspired gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(15 55% 75%), hsl(25 45% 80%));
+    --gradient-secondary: linear-gradient(135deg, hsl(355 20% 99%), hsl(25 15% 97%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(25 10% 98%));
+    --gradient-hero: linear-gradient(135deg, hsl(355 20% 99%), hsl(15 25% 95%));
     
-    /* Shadows */
-    --shadow-soft: 0 2px 20px -4px hsl(220 10% 40% / 0.1);
-    --shadow-medium: 0 4px 30px -8px hsl(220 10% 40% / 0.15);
-    --shadow-strong: 0 8px 40px -12px hsl(220 10% 40% / 0.2);
+    /* Elegant shadows */
+    --shadow-soft: 0 2px 25px -5px hsl(15 25% 45% / 0.1);
+    --shadow-medium: 0 8px 35px -8px hsl(15 25% 45% / 0.15);
+    --shadow-strong: 0 15px 50px -12px hsl(15 25% 45% / 0.2);
+    --shadow-glow: 0 0 40px hsl(15 55% 70% / 0.3);
     
-    /* Chat specific colors */
-    --chat-user-bg: hsl(262 80% 50%);
+    /* Beauty chat colors */
+    --chat-user-bg: hsl(15 55% 70%);
     --chat-user-fg: hsl(0 0% 100%);
-    --chat-bot-bg: hsl(220 15% 96%);
-    --chat-bot-fg: hsl(220 20% 10%);
+    --chat-bot-bg: hsl(25 10% 95%);
+    --chat-bot-fg: hsl(25 15% 15%);
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -70,49 +80,53 @@
   }
 
   .dark {
-    --background: 220 25% 6%;
-    --foreground: 220 15% 95%;
+    /* Dark beauty theme */
+    --background: 25 15% 8%;
+    --foreground: 25 10% 92%;
 
-    --card: 220 20% 8%;
-    --card-foreground: 220 15% 95%;
+    --card: 25 12% 10%;
+    --card-foreground: 25 10% 92%;
 
-    --popover: 220 20% 8%;
-    --popover-foreground: 220 15% 95%;
+    --popover: 25 12% 10%;
+    --popover-foreground: 25 10% 92%;
 
-    --primary: 262 80% 60%;
+    --primary: 15 55% 65%;
     --primary-foreground: 0 0% 100%;
+    --primary-muted: 15 25% 25%;
 
-    --secondary: 220 20% 12%;
-    --secondary-foreground: 220 15% 95%;
+    --secondary: 25 10% 15%;
+    --secondary-foreground: 25 10% 92%;
 
-    --muted: 220 20% 12%;
-    --muted-foreground: 220 10% 60%;
+    --muted: 25 8% 15%;
+    --muted-foreground: 25 6% 65%;
 
-    --accent: 220 20% 12%;
-    --accent-foreground: 262 80% 60%;
+    --accent: 25 10% 15%;
+    --accent-foreground: 15 55% 65%;
 
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 20% 15%;
-    --input: 220 20% 15%;
-    --ring: 262 80% 60%;
+    --border: 25 10% 18%;
+    --input: 25 10% 18%;
+    --ring: 15 55% 65%;
     
-    /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(262 80% 60%), hsl(262 70% 70%));
-    --gradient-secondary: linear-gradient(135deg, hsl(220 25% 6%), hsl(220 20% 8%));
-    --gradient-card: linear-gradient(135deg, hsl(220 20% 8%), hsl(220 15% 10%));
+    /* Dark beauty gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(15 55% 65%), hsl(25 45% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(25 15% 8%), hsl(25 12% 10%));
+    --gradient-card: linear-gradient(135deg, hsl(25 12% 10%), hsl(25 8% 12%));
+    --gradient-hero: linear-gradient(135deg, hsl(25 15% 8%), hsl(15 20% 12%));
     
-    /* Dark shadows */
-    --shadow-soft: 0 2px 20px -4px hsl(0 0% 0% / 0.3);
-    --shadow-medium: 0 4px 30px -8px hsl(0 0% 0% / 0.4);
-    --shadow-strong: 0 8px 40px -12px hsl(0 0% 0% / 0.5);
+    /* Dark elegant shadows */
+    --shadow-soft: 0 2px 25px -5px hsl(0 0% 0% / 0.4);
+    --shadow-medium: 0 8px 35px -8px hsl(0 0% 0% / 0.5);
+    --shadow-strong: 0 15px 50px -12px hsl(0 0% 0% / 0.6);
+    --shadow-glow: 0 0 40px hsl(15 55% 65% / 0.2);
     
-    /* Dark chat colors */
-    --chat-user-bg: hsl(262 80% 60%);
+    /* Dark beauty chat colors */
+    --chat-user-bg: hsl(15 55% 65%);
     --chat-user-fg: hsl(0 0% 100%);
-    --chat-bot-bg: hsl(220 20% 12%);
-    --chat-bot-fg: hsl(220 15% 95%);
+    --chat-bot-bg: hsl(25 8% 15%);
+    --chat-bot-fg: hsl(25 10% 92%);
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -131,7 +145,12 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', Georgia, serif;
   }
 }
 
@@ -141,24 +160,42 @@
   }
   
   .chat-bubble-user {
-    @apply rounded-2xl rounded-br-md px-4 py-3 max-w-[75%] ml-auto;
+    @apply rounded-3xl rounded-br-lg px-5 py-4 max-w-[75%] ml-auto;
     background: var(--chat-user-bg);
     color: var(--chat-user-fg);
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--shadow-medium);
   }
   
   .chat-bubble-bot {
-    @apply rounded-2xl rounded-bl-md px-4 py-3 max-w-[75%] mr-auto;
+    @apply rounded-3xl rounded-bl-lg px-5 py-4 max-w-[75%] mr-auto;
     background: var(--chat-bot-bg);
     color: var(--chat-bot-fg);
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--shadow-medium);
   }
   
   .gradient-bg {
-    background: var(--gradient-secondary);
+    background: var(--gradient-hero);
   }
   
   .gradient-card {
     background: var(--gradient-card);
+  }
+  
+  .beauty-card {
+    @apply bg-card border border-border/50 rounded-2xl transition-all duration-300;
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .beauty-card:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+  }
+  
+  .hero-text {
+    font-family: 'Playfair Display', Georgia, serif;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent-foreground)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
