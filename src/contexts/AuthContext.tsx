@@ -71,16 +71,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     return { error };
   };
-
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `https://preview--nagobot.lovable.app/`
-      }
-    });
-    return { error };
-  };
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+  });
+  return { error };
+};
+
 
   const signOut = async () => {
     await supabase.auth.signOut();
