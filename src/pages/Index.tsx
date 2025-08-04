@@ -3,6 +3,8 @@ import { ProductCard } from "@/components/ProductCard";
 import { ChatInterface } from "@/components/ChatInterface";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import Header from "@/components/Header";
 interface Product {
   id: string;
   name: string;
@@ -17,9 +19,8 @@ const Index = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  const { user } = useAuth();
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -54,11 +55,19 @@ const Index = () => {
     setSelectedProduct(null);
   };
   if (selectedProduct) {
-    return <div className="min-h-screen bg-background p-4">
-        <ChatInterface product={selectedProduct} onBack={handleBackToProducts} />
-      </div>;
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="p-4">
+          <ChatInterface product={selectedProduct} onBack={handleBackToProducts} />
+        </div>
+      </div>
+    );
   }
-  return <div className="min-h-screen gradient-bg">
+
+  return (
+    <div className="min-h-screen gradient-bg">
+      <Header />
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16 animate-fade-in">
@@ -98,6 +107,8 @@ const Index = () => {
               </div>)}
           </div>}
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
