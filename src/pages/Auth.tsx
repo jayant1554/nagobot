@@ -9,12 +9,18 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Sparkles, Heart, Mail, Lock, User, Chrome } from 'lucide-react';
-
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const { signIn, signUp, signInWithGoogle, user } = useAuth();
-  const { toast } = useToast();
+  const {
+    signIn,
+    signUp,
+    signInWithGoogle,
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
@@ -23,78 +29,70 @@ const Auth = () => {
       navigate('/');
     }
   }, [user, navigate]);
-
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
-
-    const { error } = await signIn(email, password);
-
+    const {
+      error
+    } = await signIn(email, password);
     if (error) {
       toast({
         title: "Sign in failed",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } else {
       toast({
         title: "Welcome back!",
-        description: "You've been signed in successfully.",
+        description: "You've been signed in successfully."
       });
     }
-
     setIsLoading(false);
   };
-
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const firstName = formData.get('firstName') as string;
     const lastName = formData.get('lastName') as string;
-
-    const { error } = await signUp(email, password, firstName, lastName);
-
+    const {
+      error
+    } = await signUp(email, password, firstName, lastName);
     if (error) {
       toast({
         title: "Sign up failed",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } else {
       toast({
         title: "Account created!",
-        description: "Please check your email to verify your account.",
+        description: "Please check your email to verify your account."
       });
     }
-
     setIsLoading(false);
   };
-
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
-    const { error } = await signInWithGoogle();
-    
+    const {
+      error
+    } = await signInWithGoogle();
     if (error) {
       toast({
         title: "Google sign in failed",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
       setIsGoogleLoading(false);
     }
     // Note: Don't set loading to false here as the user will be redirected
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5 flex items-center justify-center p-4 relative overflow-hidden">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
@@ -112,12 +110,8 @@ const Auth = () => {
             </div>
             <Heart className="h-8 w-8 text-primary/70 animate-pulse delay-300" />
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent mb-3 tracking-tight">
-            Beauty Boutique
-          </h1>
-          <p className="text-muted-foreground/80 text-lg">
-            Your gateway to beauty excellence
-          </p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent mb-3 tracking-tight">NEGO-BOT</h1>
+          <p className="text-muted-foreground/80 text-lg">Your gateway to best product at best price</p>
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto mt-4 rounded-full"></div>
         </div>
 
@@ -128,18 +122,12 @@ const Auth = () => {
             <CardTitle className="text-2xl font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
               Welcome Back
             </CardTitle>
-            <CardDescription className="text-base">
-              Continue your beauty journey with us
-            </CardDescription>
+            <CardDescription className="text-base">Continue your shopping journey with us 
+at your price</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Google Sign In Button */}
-            <Button 
-              onClick={handleGoogleSignIn}
-              variant="outline"
-              className="w-full h-12 border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 group"
-              disabled={isGoogleLoading || isLoading}
-            >
+            <Button onClick={handleGoogleSignIn} variant="outline" className="w-full h-12 border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 group" disabled={isGoogleLoading || isLoading}>
               <Chrome className="mr-3 h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
               {isGoogleLoading ? "Connecting..." : "Continue with Google"}
             </Button>
@@ -171,42 +159,20 @@ const Auth = () => {
                       <Mail className="h-4 w-4 text-primary" />
                       Email Address
                     </Label>
-                    <Input
-                      id="signin-email"
-                      name="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      className="h-12 bg-background/50 border-primary/20 focus:border-primary/40 transition-colors"
-                      required
-                    />
+                    <Input id="signin-email" name="email" type="email" placeholder="Enter your email" className="h-12 bg-background/50 border-primary/20 focus:border-primary/40 transition-colors" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signin-password" className="text-sm font-medium flex items-center gap-2">
                       <Lock className="h-4 w-4 text-primary" />
                       Password
                     </Label>
-                    <Input
-                      id="signin-password"
-                      name="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      className="h-12 bg-background/50 border-primary/20 focus:border-primary/40 transition-colors"
-                      required
-                    />
+                    <Input id="signin-password" name="password" type="password" placeholder="Enter your password" className="h-12 bg-background/50 border-primary/20 focus:border-primary/40 transition-colors" required />
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full h-12 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300" 
-                    disabled={isLoading || isGoogleLoading}
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
+                  <Button type="submit" className="w-full h-12 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300" disabled={isLoading || isGoogleLoading}>
+                    {isLoading ? <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                         Signing in...
-                      </div>
-                    ) : (
-                      "Sign In"
-                    )}
+                      </div> : "Sign In"}
                   </Button>
                 </form>
               </TabsContent>
@@ -219,25 +185,13 @@ const Auth = () => {
                         <User className="h-4 w-4 text-primary" />
                         First Name
                       </Label>
-                      <Input
-                        id="firstName"
-                        name="firstName"
-                        type="text"
-                        placeholder="First name"
-                        className="h-12 bg-background/50 border-primary/20 focus:border-primary/40 transition-colors"
-                      />
+                      <Input id="firstName" name="firstName" type="text" placeholder="First name" className="h-12 bg-background/50 border-primary/20 focus:border-primary/40 transition-colors" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName" className="text-sm font-medium">
                         Last Name
                       </Label>
-                      <Input
-                        id="lastName"
-                        name="lastName"
-                        type="text"
-                        placeholder="Last name"
-                        className="h-12 bg-background/50 border-primary/20 focus:border-primary/40 transition-colors"
-                      />
+                      <Input id="lastName" name="lastName" type="text" placeholder="Last name" className="h-12 bg-background/50 border-primary/20 focus:border-primary/40 transition-colors" />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -245,42 +199,20 @@ const Auth = () => {
                       <Mail className="h-4 w-4 text-primary" />
                       Email Address
                     </Label>
-                    <Input
-                      id="signup-email"
-                      name="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      className="h-12 bg-background/50 border-primary/20 focus:border-primary/40 transition-colors"
-                      required
-                    />
+                    <Input id="signup-email" name="email" type="email" placeholder="Enter your email" className="h-12 bg-background/50 border-primary/20 focus:border-primary/40 transition-colors" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password" className="text-sm font-medium flex items-center gap-2">
                       <Lock className="h-4 w-4 text-primary" />
                       Password
                     </Label>
-                    <Input
-                      id="signup-password"
-                      name="password"
-                      type="password"
-                      placeholder="Create a strong password"
-                      className="h-12 bg-background/50 border-primary/20 focus:border-primary/40 transition-colors"
-                      required
-                    />
+                    <Input id="signup-password" name="password" type="password" placeholder="Create a strong password" className="h-12 bg-background/50 border-primary/20 focus:border-primary/40 transition-colors" required />
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full h-12 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300" 
-                    disabled={isLoading || isGoogleLoading}
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
+                  <Button type="submit" className="w-full h-12 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300" disabled={isLoading || isGoogleLoading}>
+                    {isLoading ? <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                         Creating account...
-                      </div>
-                    ) : (
-                      "Create Account"
-                    )}
+                      </div> : "Create Account"}
                   </Button>
                 </form>
               </TabsContent>
@@ -303,8 +235,6 @@ const Auth = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Auth;
