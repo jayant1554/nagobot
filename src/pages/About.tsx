@@ -2,10 +2,8 @@ import Header from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Heart, Users, Award } from "lucide-react";
-
 const About = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <Header />
       
       <main className="container mx-auto px-4 pt-24 pb-16">
@@ -15,9 +13,7 @@ const About = () => {
             <Sparkles className="h-8 w-8 text-primary" />
             <Heart className="h-8 w-8 text-pink-500" />
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-pink-500 to-purple-600 bg-clip-text text-transparent mb-6">
-            Beauty Boutique
-          </h1>
+          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-pink-500 to-purple-600 bg-clip-text mb-6 text-red-900">NAGO-BOT</h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Where AI meets beauty to create personalized experiences that celebrate your unique style. 
             We believe everyone deserves to feel confident and beautiful.
@@ -129,8 +125,6 @@ const About = () => {
           </CardContent>
         </Card>
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default About;
