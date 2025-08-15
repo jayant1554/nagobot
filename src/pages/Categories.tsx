@@ -260,11 +260,10 @@ const Categories = () => {
                   id: product.id,
                   name: product.name,
                   description: product.description || '',
-                  originalPrice: product.base_price,
-                  currentPrice: product.min_price,
-                  image: product.image_url || '/placeholder.svg',
+                  base_price: product.base_price,
                   category: product.category || 'beauty',
-                  inStock: product.stock > 0,
+                  image_url: product.image_url || '/placeholder.svg',
+                  stock: product.stock,
                 }}
                 onNegotiate={handleNegotiate}
               />
