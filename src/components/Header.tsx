@@ -31,7 +31,7 @@ const Header = () => {
         </Link>
 
         {/* Main Navigation */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden lg:flex items-center gap-6">
           <Link 
             to="/about" 
             className="text-foreground hover:text-primary transition-colors duration-200 font-medium story-link"
@@ -42,7 +42,7 @@ const Header = () => {
             to="/categories" 
             className="text-foreground hover:text-primary transition-colors duration-200 font-medium story-link"
           >
-            Our Products
+            Products
           </Link>
           <Link 
             to="/blog" 
@@ -56,7 +56,53 @@ const Header = () => {
           >
             Contact
           </Link>
+          {user && (
+            <Link 
+              to="/profile" 
+              className="text-foreground hover:text-primary transition-colors duration-200 font-medium story-link"
+            >
+              My Profile
+            </Link>
+          )}
         </nav>
+
+        {/* Mobile Menu Button */}
+        <div className="lg:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link to="/about">About Us</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/categories">Products</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/blog">Blog</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/contact">Contact</Link>
+              </DropdownMenuItem>
+              {user && (
+                <DropdownMenuItem asChild>
+                  <Link to="/profile">My Profile</Link>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem asChild>
+                <Link to="/terms">Terms</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/privacy">Privacy</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         {/* User Menu / Auth */}
         <div className="flex items-center gap-4">
@@ -82,6 +128,22 @@ const Header = () => {
                   <Link to="/profile" className="flex items-center w-full">
                     <User className="mr-2 h-4 w-4" />
                     Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/terms" className="flex items-center w-full">
+                    <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Terms
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/privacy" className="flex items-center w-full">
+                    <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Privacy
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>
