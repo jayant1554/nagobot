@@ -86,43 +86,7 @@ const About = () => {
 
         {/* Team Section */}
         <Card className="bg-white/50 backdrop-blur-sm border-white/20">
-          <CardContent className="p-8 md:p-12">
-            <h2 className="text-3xl font-bold text-center mb-8">Meet Our Team</h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-primary to-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Users className="h-12 w-12 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold mb-1">David Kim</h3>
-                <Badge variant="secondary" className="mb-2">CEO & Founder</Badge>
-                <p className="text-sm text-muted-foreground">
-                  E-commerce and negotiation systems expert with 15+ years in marketplace technologies.
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-green-500 to-primary rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Bot className="h-12 w-12 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold mb-1">Alex Rodriguez</h3>
-                <Badge variant="secondary" className="mb-2">Head of AI</Badge>
-                <p className="text-sm text-muted-foreground">
-                  Machine learning expert specializing in conversational AI and intelligent negotiation algorithms.
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <TrendingUp className="h-12 w-12 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold mb-1">Lisa Wang</h3>
-                <Badge variant="secondary" className="mb-2">Head of Strategy</Badge>
-                <p className="text-sm text-muted-foreground">
-                  Business strategist and market analyst specializing in pricing optimization and user experience.
-                </p>
-              </div>
-            </div>
-          </CardContent>
+          
         </Card>
       </main>
     </div>;
