@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Send, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Product {
   id: string;
@@ -41,6 +42,7 @@ export const ChatInterface = ({ product, onBack }: ChatInterfaceProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -55,12 +57,22 @@ export const ChatInterface = ({ product, onBack }: ChatInterfaceProps) => {
   }, [product.id]);
 
   const initializeNegotiation = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to start negotiating",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       // Create new negotiation
       const { data: negotiationData, error: negotiationError } = await supabase
         .from('negotiations')
         .insert({
           product_id: product.id,
+          user_id: user.id,
           status: 'active'
         })
         .select()
