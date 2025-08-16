@@ -80,7 +80,7 @@ function calculateOffer(originalPrice: number, minPrice: number, negotiationRoun
   const finalPrice = Math.max(calculatedPrice, minPrice);
   
   // Ensure we never offer a higher price than previously offered
-  return Math.min(finalPrice, maxAllowedPrice);
+  return Math.round(Math.min(finalPrice, maxAllowedPrice) * 100) / 100;
 }
 
 // Generate LLM response using Groq

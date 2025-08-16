@@ -176,7 +176,7 @@ Respond with personality and use emojis. Make the negotiation fun!
 
   const generateFallbackResponse = (userMessage: string) => {
     const message = userMessage.toLowerCase();
-    const currentPrice = negotiation?.current_offer || product.base_price;
+    const currentOffer = negotiation?.current_offer || product.base_price;
     
     // Smart pattern matching for different scenarios
     if (message.includes('price') || message.includes('cost') || message.includes('$')) {
@@ -185,10 +185,13 @@ Respond with personality and use emojis. Make the negotiation fun!
       
       if (userOffer) {
         if (userOffer >= product.min_price) {
+          // NEVER offer higher than current offer - always go lower or stay same
+          const maxCounterOffer = Math.min(currentOffer, userOffer + 20);
           const counterOffer = Math.max(
-            product.min_price + 5,
-            userOffer + Math.random() * 10 + 5
+            product.min_price,
+            maxCounterOffer - Math.random() * 15
           );
+          
           return {
             message: `🤔 I appreciate your offer of $${userOffer}! I can see you're serious about this ${product.name}. 
 
@@ -199,11 +202,17 @@ What do you think? 💫`,
             accepted: false
           };
         } else {
+          // Even for low offers, never go higher than current offer
+          const counterOffer = Math.max(
+            product.min_price,
+            Math.min(currentOffer, product.min_price + 10)
+          );
+          
           return {
             message: `😅 I love your enthusiasm, but $${userOffer} is quite ambitious! This ${product.name} has premium quality that justifies its value.
 
-How about we meet somewhere in the middle? I could do $${(product.min_price + 10).toFixed(2)} - that's still an amazing deal! 🎯`,
-            offerAmount: product.min_price + 10,
+How about we meet somewhere in the middle? I could do $${counterOffer.toFixed(2)} - that's still an amazing deal! 🎯`,
+            offerAmount: counterOffer,
             accepted: false
           };
         }
@@ -214,15 +223,15 @@ How about we meet somewhere in the middle? I could do $${(product.min_price + 10
       return {
         message: `🎉 Fantastic! Welcome to the NEGO-BOT family! 
 
-Your ${product.name} is reserved at $${currentPrice.toFixed(2)}. 
+Your ${product.name} is reserved at $${currentOffer.toFixed(2)}. 
 
 I'm processing your order now... 
 
-Order confirmed! 🛍️ You saved $${(product.base_price - currentPrice).toFixed(2)}! 
+Order confirmed! 🛍️ You saved $${(product.base_price - currentOffer).toFixed(2)}! 
 
 Expect delivery in 2-3 business days. Thank you for choosing us! 📦`,
         accepted: true,
-        finalPrice: currentPrice,
+        finalPrice: currentOffer,
         orderId: `NB-${Date.now()}`
       };
     }
