@@ -185,11 +185,12 @@ Respond with personality and use emojis. Make the negotiation fun!
       
       if (userOffer) {
         if (userOffer >= product.min_price) {
-          // NEVER offer higher than current offer - always go lower or stay same
-          const maxCounterOffer = Math.min(currentOffer, userOffer + 20);
+          // CRITICAL: Calculate a counter-offer that's LOWER than current offer
+          // Reduce current offer by 3-8% but never go below minimum
+          const reductionAmount = currentOffer * (0.03 + Math.random() * 0.05);
           const counterOffer = Math.max(
             product.min_price,
-            maxCounterOffer - Math.random() * 15
+            Math.round((currentOffer - reductionAmount) * 100) / 100
           );
           
           return {
@@ -202,10 +203,11 @@ What do you think? 💫`,
             accepted: false
           };
         } else {
-          // Even for low offers, never go higher than current offer
+          // For very low offers, give a significant discount but still lower than current
+          const reductionAmount = currentOffer * (0.05 + Math.random() * 0.08);
           const counterOffer = Math.max(
             product.min_price,
-            Math.min(currentOffer, product.min_price + 10)
+            Math.round((currentOffer - reductionAmount) * 100) / 100
           );
           
           return {

@@ -48,28 +48,30 @@ function isAskingForDiscount(userInput: string): boolean {
 
 // Calculate appropriate offer based on negotiation round and current offer
 function calculateOffer(originalPrice: number, minPrice: number, negotiationRound: number, currentOffer: number | null, userOfferedPrice?: number): number {
-  // If user offered a specific price that's above minimum, accept it
+  // CRITICAL: Never go higher than the current lowest offer
+  const maxAllowedPrice = currentOffer || originalPrice;
+  
+  // If user offered a specific price, only accept if it's LOWER than current offer and above minimum
   if (userOfferedPrice && userOfferedPrice >= minPrice) {
-    return Math.max(userOfferedPrice, minPrice);
+    const acceptedPrice = Math.max(userOfferedPrice, minPrice);
+    // Only accept if it's not higher than current offer
+    return Math.min(acceptedPrice, maxAllowedPrice);
   }
   
   // Use current offer as baseline if it exists, otherwise use original price
   const basePrice = currentOffer || originalPrice;
   
-  // Never go higher than the current lowest offer
-  const maxAllowedPrice = currentOffer || originalPrice;
-  
   // Progressive discount strategy - smaller discounts each round
   let discountPercentage: number;
   switch (negotiationRound) {
-    case 1: // First discount: 5-7% from original price
-      discountPercentage = 0.06;
+    case 1: // First discount: 5-10% from original price or current offer
+      discountPercentage = 0.08;
       break;
-    case 2: // Second discount: 3-5% from current offer
-      discountPercentage = 0.04;
+    case 2: // Second discount: 4-6% from current offer
+      discountPercentage = 0.05;
       break;
-    case 3: // Third discount: 2-3% from current offer
-      discountPercentage = 0.025;
+    case 3: // Third discount: 2-4% from current offer
+      discountPercentage = 0.03;
       break;
     default: // Final small discounts: 1-2% from current offer
       discountPercentage = 0.015;
@@ -79,7 +81,7 @@ function calculateOffer(originalPrice: number, minPrice: number, negotiationRoun
   const calculatedPrice = basePrice * (1 - discountPercentage);
   const finalPrice = Math.max(calculatedPrice, minPrice);
   
-  // Ensure we never offer a higher price than previously offered
+  // CRITICAL: Ensure we NEVER offer a higher price than previously offered
   return Math.round(Math.min(finalPrice, maxAllowedPrice) * 100) / 100;
 }
 
@@ -256,15 +258,15 @@ serve(async (req) => {
     // Validate the offered price and ensure it follows our rules
     let finalOfferedPrice = null;
     if (offeredPrice && offeredPrice >= product.min_price) {
-      // Ensure we never offer a higher price than current offer
-      if (negotiation.current_offer) {
-        finalOfferedPrice = Math.min(offeredPrice, negotiation.current_offer);
-      } else {
-        finalOfferedPrice = offeredPrice;
-      }
+      // CRITICAL: Never offer higher than current offer
+      const maxAllowed = negotiation.current_offer || product.base_price;
+      finalOfferedPrice = Math.min(offeredPrice, maxAllowed);
       
       // Double-check it's not below minimum
       finalOfferedPrice = Math.max(finalOfferedPrice, product.min_price);
+      
+      // Round to 2 decimal places
+      finalOfferedPrice = Math.round(finalOfferedPrice * 100) / 100;
     }
 
     // Update negotiation current_offer if we have a new offer
