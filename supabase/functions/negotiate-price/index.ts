@@ -13,27 +13,47 @@ const groqApiKey = Deno.env.get('GROQ_API_KEY');
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Extract price from text (supporting both $ and ₹) - improved logic from Streamlit
+// Extract price from text - enhanced to catch more formats
 function extractPriceFromText(text: string): number | null {
-  // First try to match ₹ prices (3-5 digits as in Streamlit)
-  const rupeeMatch = text.match(/₹\s?(\d{3,5})/);
-  if (rupeeMatch) {
-    return parseInt(rupeeMatch[1]);
+  console.log('Extracting price from text:', text);
+  
+  // Try various price patterns
+  const patterns = [
+    /\$\s?(\d+(?:\.\d{2})?)/,           // $100 or $100.50
+    /₹\s?(\d{3,5})/,                    // ₹1000
+    /(\d+(?:\.\d{2})?)\s*(?:dollars?|bucks?)/i,  // 100 dollars
+    /can\s+u\s+do\s+\$?(\d+)/i,        // "can u do $600"
+    /how\s+about\s+\$?(\d+)/i,         // "how about $500"
+    /(\d+)\s*(?:is\s+my\s+budget|budget)/i  // "500 is my budget"
+  ];
+  
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      const price = parseFloat(match[1]);
+      console.log('Found price:', price);
+      return price;
+    }
   }
   
-  // Fallback to $ prices with decimal support
-  const dollarMatch = text.match(/\$\s?(\d+(?:\.\d{2})?)/);
-  if (dollarMatch) {
-    return parseFloat(dollarMatch[1]);
-  }
-  
+  console.log('No price found in text');
   return null;
 }
 
-// Check if user agreed - enhanced logic from Streamlit
+// Check if user agreed - enhanced logic but more specific
 function userAgreed(userInput: string): boolean {
-  const keywords = ["deal", "i agree", "okay", "ok", "done", "confirm", "sure", "accept", "yes"];
-  return keywords.some(keyword => userInput.toLowerCase().includes(keyword));
+  const input = userInput.toLowerCase().trim();
+  
+  // Only consider these as agreement if they're not part of a negotiation
+  const exactAgreements = ["deal", "i agree", "okay deal", "ok deal", "done", "confirm", "accept", "yes deal"];
+  
+  // Don't treat questions or offers as agreements
+  if (input.includes('?') || input.includes('can you') || input.includes('how about') || 
+      input.includes('what if') || input.includes('$') || input.includes('price')) {
+    return false;
+  }
+  
+  return exactAgreements.some(keyword => input.includes(keyword));
 }
 
 // Check if user is asking for a discount
@@ -104,21 +124,25 @@ async function generateLlmResponse(
   
   // Extract user's offered price if any
   const userOfferedPrice = extractPriceFromText(userInput);
+  console.log('User offered price:', userOfferedPrice);
   
   let shouldOfferPrice = false;
   let suggestedPrice = originalPrice;
   
-  // Offer a price if user asks for discount, makes an offer, or shows interest in negotiating
-  if (askingForDiscount || userOfferedPrice || 
+  // ALWAYS offer a counter-price if user makes an offer or asks for pricing
+  if (userOfferedPrice || askingForDiscount || 
       userInput.toLowerCase().includes('price') || 
       userInput.toLowerCase().includes('cost') ||
       userInput.toLowerCase().includes('buy') ||
-      userInput.toLowerCase().includes('purchase')) {
+      userInput.toLowerCase().includes('purchase') ||
+      userInput.toLowerCase().includes('deal')) {
     shouldOfferPrice = true;
     suggestedPrice = calculateOffer(originalPrice, minPrice, negotiationRound, lastOffer, userOfferedPrice || undefined);
+    console.log('Will offer price:', suggestedPrice);
   } else {
     // For general inquiries, still be helpful but don't offer discounts immediately
     shouldOfferPrice = false;
+    console.log('Not offering price for general inquiry');
   }
 
   const lastOfferNote = lastOffer ? `\nYou previously offered $${lastOffer}.\n` : "";
