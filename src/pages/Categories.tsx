@@ -130,7 +130,7 @@ const Categories = () => {
         </div>
 
         {/* Category Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+{/*         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {categories.map((category) => {
             const IconComponent = category.icon;
             return (
@@ -153,7 +153,7 @@ const Categories = () => {
             );
           })}
         </div>
-
+ */}
         {/* Filters */}
         <Card className="bg-white/50 backdrop-blur-sm border-white/20 mb-8">
           <CardContent className="p-6">
