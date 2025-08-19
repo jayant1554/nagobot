@@ -108,19 +108,23 @@ async function generateLlmResponse(
   let shouldOfferPrice = false;
   let suggestedPrice = originalPrice;
   
-  // Only offer a price if user explicitly asks for discount or makes an offer
-  if (askingForDiscount || userOfferedPrice) {
+  // Offer a price if user asks for discount, makes an offer, or shows interest in negotiating
+  if (askingForDiscount || userOfferedPrice || 
+      userInput.toLowerCase().includes('price') || 
+      userInput.toLowerCase().includes('cost') ||
+      userInput.toLowerCase().includes('buy') ||
+      userInput.toLowerCase().includes('purchase')) {
     shouldOfferPrice = true;
     suggestedPrice = calculateOffer(originalPrice, minPrice, negotiationRound, lastOffer, userOfferedPrice || undefined);
   } else {
-    // Don't offer any price - just be helpful about the product
+    // For general inquiries, still be helpful but don't offer discounts immediately
     shouldOfferPrice = false;
   }
 
   const lastOfferNote = lastOffer ? `\nYou previously offered $${lastOffer}.\n` : "";
   const priceInstruction = shouldOfferPrice 
     ? `You should offer a price of $${suggestedPrice.toFixed(2)} in your response.`
-    : `Do NOT offer any discount or mention pricing unless the customer specifically asks for a better price.`;
+    : `Be helpful about the product features. Only mention pricing if the customer specifically asks about deals or pricing.`;
 
   const prompt = `
 You are a polite and persuasive chatbot for an eCommerce platform helping users negotiate product prices.
@@ -182,6 +186,7 @@ serve(async (req) => {
 
   try {
     const { userMessage, negotiationId, productId } = await req.json();
+    console.log('Processing negotiation request:', { userMessage, negotiationId, productId });
 
     // Get product details
     const { data: product, error: productError } = await supabase
@@ -232,6 +237,7 @@ serve(async (req) => {
     }
 
     // Count negotiation rounds (count previous chat messages from user)
+    console.log('Fetching chat history for negotiation:', negotiationId);
     const { data: chatHistory, error: chatError } = await supabase
       .from('chat_messages')
       .select('sender')
@@ -239,7 +245,12 @@ serve(async (req) => {
       .eq('sender', 'user')
       .order('created_at', { ascending: true });
 
-    const negotiationRound = (chatHistory?.length || 0) + 1;
+    if (chatError) {
+      console.error('Error fetching chat history:', chatError);
+    }
+
+    const negotiationRound = chatError ? 1 : (chatHistory?.length || 0) + 1;
+    console.log('Negotiation round:', negotiationRound);
 
     // Generate LLM response
     const botResponse = await generateLlmResponse(
