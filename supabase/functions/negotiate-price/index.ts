@@ -68,41 +68,57 @@ function isAskingForDiscount(userInput: string): boolean {
 
 // Calculate appropriate offer based on negotiation round and current offer
 function calculateOffer(originalPrice: number, minPrice: number, negotiationRound: number, currentOffer: number | null, userOfferedPrice?: number): number {
-  // CRITICAL: Never go higher than the current lowest offer
-  const maxAllowedPrice = currentOffer || originalPrice;
+  console.log('calculateOffer inputs:', { originalPrice, minPrice, negotiationRound, currentOffer, userOfferedPrice });
   
-  // If user offered a specific price, only accept if it's LOWER than current offer and above minimum
-  if (userOfferedPrice && userOfferedPrice >= minPrice) {
-    const acceptedPrice = Math.max(userOfferedPrice, minPrice);
-    // Only accept if it's not higher than current offer
-    return Math.min(acceptedPrice, maxAllowedPrice);
+  // Start with a baseline - if no current offer, start with a discount from original
+  let basePrice = currentOffer;
+  if (!basePrice) {
+    // First offer should be discounted from original price (10-15% discount)
+    basePrice = originalPrice * 0.85; // Start with 15% discount
   }
   
-  // Use current offer as baseline if it exists, otherwise use original price
-  const basePrice = currentOffer || originalPrice;
+  // If user offered a specific price, counter with something between their offer and current price
+  if (userOfferedPrice && userOfferedPrice >= minPrice) {
+    if (userOfferedPrice >= basePrice) {
+      // User offered more than our current offer - accept it!
+      const finalPrice = Math.max(userOfferedPrice, minPrice);
+      console.log('User offered higher price, accepting:', finalPrice);
+      return Math.round(finalPrice * 100) / 100;
+    } else {
+      // User offered less - counter with something between their offer and our current price
+      const gap = basePrice - userOfferedPrice;
+      const counterOffer = Math.max(
+        minPrice,
+        userOfferedPrice + (gap * 0.3) // Meet them 70% of the way
+      );
+      console.log('Countering user offer:', counterOffer);
+      return Math.round(counterOffer * 100) / 100;
+    }
+  }
   
-  // Progressive discount strategy - smaller discounts each round
+  // Progressive discount strategy for general negotiations
   let discountPercentage: number;
   switch (negotiationRound) {
-    case 1: // First discount: 5-10% from original price or current offer
-      discountPercentage = 0.08;
+    case 1: // First interaction - 10-15% discount from original
+      discountPercentage = 0.12;
+      basePrice = originalPrice;
       break;
-    case 2: // Second discount: 4-6% from current offer
-      discountPercentage = 0.05;
+    case 2: // Second round - additional 3-5% discount
+      discountPercentage = 0.04;
       break;
-    case 3: // Third discount: 2-4% from current offer
-      discountPercentage = 0.03;
+    case 3: // Third round - additional 2-3% discount
+      discountPercentage = 0.025;
       break;
-    default: // Final small discounts: 1-2% from current offer
+    default: // Final rounds - small 1-2% discounts
       discountPercentage = 0.015;
       break;
   }
   
-  const calculatedPrice = basePrice * (1 - discountPercentage);
-  const finalPrice = Math.max(calculatedPrice, minPrice);
+  const discountedPrice = basePrice * (1 - discountPercentage);
+  const finalPrice = Math.max(discountedPrice, minPrice);
   
-  // CRITICAL: Ensure we NEVER offer a higher price than previously offered
-  return Math.round(Math.min(finalPrice, maxAllowedPrice) * 100) / 100;
+  console.log('Calculated offer:', finalPrice);
+  return Math.round(finalPrice * 100) / 100;
 }
 
 // Generate LLM response using Groq
@@ -235,6 +251,9 @@ serve(async (req) => {
     }
 
     // Check if user agreed to the last offer
+    console.log('Checking if user agreed. Message:', userMessage);
+    console.log('Current offer:', negotiation.current_offer);
+    
     if (userAgreed(userMessage) && negotiation.current_offer) {
       // Generate order ID
       const orderId = crypto.randomUUID().slice(0, 8);
@@ -277,6 +296,16 @@ serve(async (req) => {
     console.log('Negotiation round:', negotiationRound);
 
     // Generate LLM response
+    console.log('Generating LLM response with params:', {
+      userMessage,
+      productName: product.name,
+      basePrice: product.base_price,
+      minPrice: product.min_price,
+      stock: product.stock,
+      currentOffer: negotiation.current_offer,
+      negotiationRound
+    });
+    
     const botResponse = await generateLlmResponse(
       userMessage,
       product.name,
@@ -289,19 +318,18 @@ serve(async (req) => {
 
     // Extract price from bot response
     const offeredPrice = extractPriceFromText(botResponse);
+    console.log('Bot response:', botResponse);
+    console.log('Extracted price from bot response:', offeredPrice);
     
     // Validate the offered price and ensure it follows our rules
     let finalOfferedPrice = null;
     if (offeredPrice && offeredPrice >= product.min_price) {
-      // CRITICAL: Never offer higher than current offer
-      const maxAllowed = negotiation.current_offer || product.base_price;
-      finalOfferedPrice = Math.min(offeredPrice, maxAllowed);
-      
-      // Double-check it's not below minimum
-      finalOfferedPrice = Math.max(finalOfferedPrice, product.min_price);
-      
+      finalOfferedPrice = Math.max(offeredPrice, product.min_price);
       // Round to 2 decimal places
       finalOfferedPrice = Math.round(finalOfferedPrice * 100) / 100;
+      console.log('Final offered price after validation:', finalOfferedPrice);
+    } else {
+      console.log('No valid price found in bot response, price was:', offeredPrice);
     }
 
     // Update negotiation current_offer if we have a new offer
